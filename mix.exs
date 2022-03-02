@@ -21,8 +21,9 @@ defmodule Litestream.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:castore, ">= 0.0.0"},
-      {:ex_doc, ">= 0.0.0", only: :docs}
+      {:erlexec, "~> 1.19"},
+      {:castore, "~> 0.1.15"},
+      {:ex_doc, "~> 0.28.2", only: :docs}
     ]
   end
 end
