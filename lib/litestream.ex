@@ -1,18 +1,15 @@
 defmodule Litestream do
   @moduledoc """
-  Documentation for `Litestream`.
+  This GenServer module allows you to run [Litestream](https://litestream.io/) via a port in the background
+  so that you can easily backup your SQLite database to an object store.
   """
 
-  @doc """
-  Hello world.
+  use GenServer
 
-  ## Examples
+  def start_link(opts) do
+  end
 
-      iex> Litestream.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  @impl true
+  def init(opts) do
   end
 end
