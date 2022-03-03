@@ -28,6 +28,8 @@ defmodule Litestream do
   * `:access_key_id` - The access key ID to the provided `:replica_url`. REQUIRED
   * `:secret_access_key` - The secret access key to the provided `:replica_url`. REQUIRED
   * `:name` - The name of the GenServer process. By default it is `Litestream`. OPTIONAL
+  * `:bin_path` - If you already have access to the Litestream binary, provide the path via this
+                  option so that you can skip the download step. OPTIONAL
   """
   def start_link(opts) do
     state = %{
@@ -35,6 +37,7 @@ defmodule Litestream do
       replica_url: Keyword.fetch!(opts, :replica_url),
       access_key_id: Keyword.fetch!(opts, :access_key_id),
       secret_access_key: Keyword.fetch!(opts, :secret_access_key),
+      bin_path: Keyword.get(opts, :bin_path, :download),
       version: Keyword.get(opts, :version, Downloader.latest_version())
     }
 
@@ -76,7 +79,15 @@ defmodule Litestream do
       |> Map.put(:otp_app, otp_app)
       |> Map.put(:database, database_file)
 
-    {:ok, updated_state, {:continue, :download_litestream}}
+    if state.bin_path == :download do
+      {:ok, updated_state, {:continue, :download_litestream}}
+    else
+      unless File.exists?(state.bin_path) do
+        raise "The path to the Litestream binary does not exist: #{inspect(state.bin_path)}"
+      end
+
+      {:ok, updated_state, {:continue, :start_litestream}}
+    end
   end
 
   @impl true
