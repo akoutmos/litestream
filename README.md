@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  Easily backup your SQLite database right from Elixir using [Litestream](https://litestream.io/)
+  Easily backup your SQLite database right from Elixir using <a href="https://litestream.io/" target="_blank">Litestream</a>
 </p>
 
 <p align="center">
