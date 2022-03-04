@@ -56,7 +56,7 @@ defmodule Litestream do
   This function will cleanly stop the Litestream process, but the GenServer will still be
   running.
   """
-  def stop_lightstream(name \\ __MODULE__) do
+  def stop_litestream(name \\ __MODULE__) do
     GenServer.call(name, :stop_litestream, @call_timeout)
   end
 
@@ -64,7 +64,7 @@ defmodule Litestream do
   This function will start the Litestream process, if it is not currently running. If it is
   already running, then this operation is effectively a no-op.
   """
-  def start_lightstream(name \\ __MODULE__) do
+  def start_litestream(name \\ __MODULE__) do
     GenServer.call(name, :start_litestream, @call_timeout)
   end
 
