@@ -45,6 +45,14 @@ defmodule Litestream do
   end
 
   @doc """
+  This function will return the status of the Litestream port with either a `:down` or
+  `:running` atom.
+  """
+  def status(name \\ __MODULE__) do
+    GenServer.call(name, :status, @call_timeout)
+  end
+
+  @doc """
   This function will cleanly stop the Litestream process, but the GenServer will still be
   running.
   """
@@ -134,6 +142,14 @@ defmodule Litestream do
   end
 
   @impl true
+  def handle_call(:status, _from, %{os_pid: os_pid} = state) do
+    if os_pid in :exec.which_children() do
+      {:reply, :running, state}
+    else
+      {:reply, :down, state}
+    end
+  end
+
   def handle_call(:start_litestream, _from, %{os_pid: os_pid} = state) do
     if os_pid in :exec.which_children() do
       Logger.info("Litestream is already running")
