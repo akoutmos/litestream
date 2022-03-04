@@ -78,6 +78,7 @@ defmodule Litestream do
       state
       |> Map.put(:otp_app, otp_app)
       |> Map.put(:database, database_file)
+      |> clear_pids()
 
     if state.bin_path == :download do
       {:ok, updated_state, {:continue, :download_litestream}}
@@ -107,7 +108,7 @@ defmodule Litestream do
   end
 
   def handle_continue(:start_litestream, state) do
-    {:ok, port_pid, _os_pid} =
+    {:ok, port_pid, os_pid} =
       :exec.run_link(
         "#{state.bin_path} replicate #{state.database} #{state.replica_url}",
         [
@@ -124,14 +125,44 @@ defmodule Litestream do
         ]
       )
 
-    {:noreply, state}
+    updated_state =
+      state
+      |> Map.put(:port_pid, port_pid)
+      |> Map.put(:os_pid, os_pid)
+
+    {:noreply, updated_state}
+  end
+
+  @impl true
+  def handle_call(:start_litestream, _from, %{os_pid: os_pid} = state) do
+    if os_pid in :exec.which_children() do
+      Logger.info("Litestream is already running")
+
+      {:reply, :ok, state}
+    else
+      Logger.info("Starting Litestream")
+
+      {:reply, :ok, state, {:continue, :start_litestream}}
+    end
+  end
+
+  def handle_call(:stop_litestream, _from, %{port_pid: port_pid, os_pid: os_pid} = state) do
+    if os_pid in :exec.which_children() do
+      :ok = :exec.kill(port_pid, :sigterm)
+
+      {:reply, :ok, clear_pids(state)}
+    else
+      Logger.info("Litestream is not running")
+
+      {:reply, :ok, state}
+    end
   end
 
   @impl true
   def handle_info({:EXIT, _os_pid, reason}, state) do
-    Logger.info("Litestream has exited with reason: #{reason}")
+    Logger.info("Litestream has exited with reason: #{inspect(reason)}")
 
-    {:noreply, state}
+    {:noreply, clear_pids(state)}
   end
 
   def handle_info({:DOWN, _os_pid, _process, _pid, reason}, state) do
@@ -147,15 +178,24 @@ defmodule Litestream do
   end
 
   def handle_info({:stderr, _os_pid, output}, state) do
-    Logger.warn(output)
+    Logger.warning(output)
 
     {:noreply, state}
   end
 
   @impl true
   def terminate(reason, _state) do
-    Logger.info("Litestream is shutting down with reason #{inspect(reason)}")
+    Logger.info("Litestream is terminating with reason #{inspect(reason)}")
 
     :ok
+  end
+
+  # +------------------------------------------------------------------+
+  # |                   Private Helper Functions                       |
+  # +------------------------------------------------------------------+
+  defp clear_pids(state) do
+    state
+    |> Map.put(:port_pid, nil)
+    |> Map.put(:os_pid, nil)
   end
 end
