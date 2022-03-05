@@ -11,6 +11,9 @@ defmodule Litestream.MixProject do
       homepage_url: "https://hex.pm/packages/litestream",
       description: "Add Litestream to your SQLite powered application for effortless backups",
       start_permanent: Mix.env() == :prod,
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ],
       deps: deps(),
       package: package(),
       docs: docs()
@@ -27,9 +30,17 @@ defmodule Litestream.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      # Required dependencies
       {:erlexec, "~> 1.19"},
       {:castore, "~> 0.1.15"},
-      {:ex_doc, "~> 0.28.2", only: :dev, runtime: false}
+
+      # Development related dependencies
+      {:ex_doc, "~> 0.28.2", only: :dev},
+      {:excoveralls, "~> 0.14.4", only: :test, runtime: false},
+      {:doctor, "~> 0.18.0", only: :dev},
+      {:credo, "~> 1.6.1", only: :dev},
+      {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},
+      {:git_hooks, "~> 0.6.4", only: [:test, :dev], runtime: false}
     ]
   end
 
