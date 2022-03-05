@@ -45,8 +45,6 @@ jobs:
         run: mix credo --strict
       - name: Doctor documentation checks
         run: mix doctor
-      - name: Dialyzer checks
-        run: mix dialyzer
 
   unit_test:
     name: Run ExUnit tests

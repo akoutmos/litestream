@@ -19,9 +19,6 @@ defmodule Litestream.MixProject do
         "coveralls.html": :test,
         "coveralls.github": :test
       ],
-      dialyzer: [
-        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
-      ],
       deps: deps(),
       package: package(),
       docs: docs()
@@ -47,7 +44,6 @@ defmodule Litestream.MixProject do
       {:excoveralls, "~> 0.14.4", only: :test, runtime: false},
       {:doctor, "~> 0.18.0", only: :dev},
       {:credo, "~> 1.6.1", only: :dev},
-      {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},
       {:git_hooks, "~> 0.6.4", only: [:test, :dev], runtime: false}
     ]
   end
