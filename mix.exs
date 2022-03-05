@@ -11,6 +11,14 @@ defmodule Litestream.MixProject do
       homepage_url: "https://hex.pm/packages/litestream",
       description: "Add Litestream to your SQLite powered application for effortless backups",
       start_permanent: Mix.env() == :prod,
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test
+      ],
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
