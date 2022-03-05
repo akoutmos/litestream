@@ -1,10 +1,6 @@
 <p align="center">
   <img align="center" width="25%" src="guides/images/logo.svg" alt="Litestream Elixir Logo">
-<<<<<<< HEAD
   <img align="center" width="50%" src="guides/images/logo_name.png" alt="Litestream title">
-=======
-  <img align="center" width="45%" src="guides/images/logo_name.png" alt="Litestream title">
->>>>>>> c074c620592aa3e0dc909ec1095448ae6593dae0
 </p>
 
 <p align="center">
