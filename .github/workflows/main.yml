@@ -2,6 +2,7 @@ name: Litestream CI
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  SHELL: sh
 
 on:
   push:
