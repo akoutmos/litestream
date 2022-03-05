@@ -4,7 +4,7 @@ defmodule Litestream.MixProject do
   def project do
     [
       app: :litestream,
-      version: "0.1.0-beta",
+      version: "0.1.0",
       elixir: "~> 1.13",
       name: "Litestream",
       source_url: "https://github.com/akoutmos/litestream",
@@ -21,7 +21,8 @@ defmodule Litestream.MixProject do
       ],
       deps: deps(),
       package: package(),
-      docs: docs()
+      docs: docs(),
+      aliases: aliases()
     ]
   end
 
@@ -65,9 +66,28 @@ defmodule Litestream.MixProject do
     [
       main: "readme",
       source_ref: "master",
+      logo: "guides/images/logo.svg",
       extras: [
         "README.md"
       ]
     ]
+  end
+
+  defp aliases do
+    [
+      docs: ["docs", &copy_files/1]
+    ]
+  end
+
+  defp copy_files(_) do
+    # Set up directory structure
+    File.mkdir_p!("./doc/guides/images")
+
+    # Copy over image files
+    "./guides/images/"
+    |> File.ls!()
+    |> Enum.each(fn image_file ->
+      File.cp!("./guides/images/#{image_file}", "./doc/guides/images/#{image_file}")
+    end)
   end
 end
