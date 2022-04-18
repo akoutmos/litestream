@@ -39,7 +39,7 @@ dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:litestream, "~> 0.1.0"}
+    {:litestream, "~> 0.2.0"}
   ]
 end
 ```
@@ -73,7 +73,7 @@ Checkout my [GitHub Sponsorship page](https://github.com/sponsors/akoutmos) if y
 
 ## Setting Up Litestream
 
-After adding `{:litestream, "~> 0.1.0"}` in your `mix.exs` file and running `mix deps.get`, open your `application.ex`
+After adding `{:litestream, "~> 0.2.0"}` in your `mix.exs` file and running `mix deps.get`, open your `application.ex`
 file and add the following to your supervision tree:
 
 ```elixir
