@@ -37,7 +37,7 @@ defmodule Litestream.MixProject do
   defp deps do
     [
       # Required dependencies
-      {:erlexec, "~> 1.19"},
+      {:erlexec, "~> 2.0"},
       {:castore, "~> 0.1.15"},
 
       # Development related dependencies
