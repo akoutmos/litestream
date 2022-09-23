@@ -27,3 +27,6 @@ Litestream-v*
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Somewhere to store the litestream binaries during development
+/downloads/

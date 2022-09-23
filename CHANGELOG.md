@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.0] - 2021-04-17
+## [0.3.0] - 2022-09-23
+
+### Changed
+
+- Support for version 0.3.9 of Litestream
+- Updated the version of `:erlexec` to version `2.0.0`
+
+## [0.2.0] - 2022-04-18
 
 ### Added
 

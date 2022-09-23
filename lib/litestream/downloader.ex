@@ -5,10 +5,15 @@ defmodule Litestream.Downloader do
 
   require Logger
 
-  @latest_litestream_version "0.3.8"
-  @supported_litestream_versions ["0.3.8", "0.3.7"]
+  @latest_litestream_version "0.3.9"
+  @supported_litestream_versions ["0.3.9", "0.3.8", "0.3.7"]
 
   @valid_litestream_versions %{
+    # All the SHA hashes for version 0.3.9
+    {"0.3.9", :darwin, :amd64} => "74599a34dc440c19544f533be2ef14cd4378ec1969b9b4fcfd24158946541869",
+    {"0.3.9", :linux, :amd64} => "806e1cca4a2a105a36f219a4c212a220569d50a8f13f45f38ebe49e6699ab99f",
+    {"0.3.9", :linux, :arm64} => "61acea9d960633f6df514972688c47fa26979fbdb5b4e81ebc42f4904394c5c5",
+
     # All the SHA hashes for version 0.3.8
     {"0.3.8", :darwin, :amd64} => "d359a4edd1cb98f59a1a7c787bbd0ed30c6cc3126b02deb05a0ca501ff94a46a",
     {"0.3.8", :linux, :amd64} => "530723d95a51ee180e29b8eba9fee8ddafc80a01cab7965290fb6d6fc31381b3",
