@@ -14,7 +14,7 @@
 
   <a href="https://github.com/akoutmos/litestream/actions">
     <img alt="GitHub Workflow Status (master)"
-    src="https://img.shields.io/github/workflow/status/akoutmos/litestream/Litestream%20CI/master?label=Build%20Status&style=for-the-badge">
+    src="https://img.shields.io/github/actions/workflow/status/akoutmos/litestream/main.yml?label=Build%20Status&style=for-the-badge&branch=master">
   </a>
 
   <a href="https://github.com/sponsors/akoutmos">
