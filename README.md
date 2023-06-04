@@ -39,7 +39,7 @@ dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:litestream, "~> 0.3.0"}
+    {:litestream, "~> 0.4.0"}
   ]
 end
 ```

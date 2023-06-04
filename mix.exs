@@ -4,7 +4,7 @@ defmodule Litestream.MixProject do
   def project do
     [
       app: :litestream,
-      version: "0.3.0",
+      version: "0.4.0",
       elixir: "~> 1.13",
       name: "Litestream",
       source_url: "https://github.com/akoutmos/litestream",
