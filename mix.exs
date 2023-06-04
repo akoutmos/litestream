@@ -38,7 +38,7 @@ defmodule Litestream.MixProject do
     [
       # Required dependencies
       {:erlexec, "~> 2.0"},
-      {:castore, "~> 0.1.15"},
+      {:castore, "~> 1.0"},
 
       # Development related dependencies
       {:ex_doc, "~> 0.28.2", only: :dev},
