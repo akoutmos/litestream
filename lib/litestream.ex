@@ -38,7 +38,7 @@ defmodule Litestream do
       access_key_id: Keyword.fetch!(opts, :access_key_id),
       secret_access_key: Keyword.fetch!(opts, :secret_access_key),
       bin_path: Keyword.get(opts, :bin_path, :download),
-      version: Keyword.get(opts, :version, Downloader.latest_version())
+      version: Keyword.get(opts, :version, Downloader.default_version())
     }
 
     GenServer.start_link(__MODULE__, state, name: Keyword.get(opts, :name, __MODULE__))
@@ -108,7 +108,7 @@ defmodule Litestream do
     File.mkdir_p!(download_dir)
     File.mkdir_p!(bin_dir)
 
-    {:ok, bin_path} = Downloader.download_litestream(version, download_dir, bin_dir)
+    {:ok, [bin_path], []} = Downloader.download(bin_dir, override_version: version)
 
     updated_state = Map.put(state, :bin_path, bin_path)
 
