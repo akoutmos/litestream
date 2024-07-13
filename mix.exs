@@ -39,14 +39,13 @@ defmodule Litestream.MixProject do
       # Required dependencies
       {:erlexec, "~> 2.0"},
       {:castore, "~> 1.0"},
-      {:octo_fetch, "~> 0.3.0"},
+      {:octo_fetch, "~> 0.4"},
 
       # Development related dependencies
-      {:ex_doc, "~> 0.28.2", only: :dev},
-      {:excoveralls, "~> 0.14.4", only: :test, runtime: false},
-      {:doctor, "~> 0.18.0", only: :dev},
-      {:credo, "~> 1.6.1", only: :dev},
-      {:git_hooks, "~> 0.6.4", only: [:test, :dev], runtime: false}
+      {:ex_doc, "~> 0.34", only: :dev},
+      {:doctor, "~> 0.21", only: :dev},
+      {:credo, "~> 1.7", only: :dev},
+      {:excoveralls, "~> 0.18", only: :test, runtime: false}
     ]
   end
 
