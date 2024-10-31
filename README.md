@@ -11,12 +11,10 @@
   <a href="https://hex.pm/packages/litestream">
     <img alt="Hex.pm" src="https://img.shields.io/hexpm/v/litestream?style=for-the-badge">
   </a>
-
   <a href="https://github.com/akoutmos/litestream/actions">
     <img alt="GitHub Workflow Status (master)"
     src="https://img.shields.io/github/actions/workflow/status/akoutmos/litestream/main.yml?label=Build%20Status&style=for-the-badge&branch=master">
   </a>
-
   <a href="https://github.com/sponsors/akoutmos">
     <img alt="Support the project" src="https://img.shields.io/badge/Support%20the%20project-%E2%9D%A4-lightblue?style=for-the-badge">
   </a>
@@ -44,7 +42,7 @@ def deps do
 end
 ```
 
-Documentation can be found at [https://hexdocs.pm/litestream](https://hexdocs.pm/litestream).
+Documentation can be found at [hexdocs.pm/litestream](https://hexdocs.pm/litestream).
 
 ## Supporting Litestream
 
@@ -73,7 +71,7 @@ Checkout my [GitHub Sponsorship page](https://github.com/sponsors/akoutmos) if y
 
 ## Setting Up Litestream
 
-After adding `{:litestream, "~> 0.2.0"}` in your `mix.exs` file and running `mix deps.get`, open your `application.ex`
+After adding `{:litestream, "~> 0.4.0"}` in your `mix.exs` file and running `mix deps.get`, open your `application.ex`
 file and add the following to your supervision tree:
 
 ```elixir
@@ -112,3 +110,7 @@ automatically synced with your remote destination.
 
 - The logo for the project is an edited version of an SVG image from the [unDraw project](https://undraw.co/)
 - The Litestream library that this library wraps [Litestream](https://litestream.io)
+
+## License
+
+[MIT](LICENSE)
