@@ -12,13 +12,6 @@ defmodule Litestream.MixProject do
       description: "Add Litestream to your SQLite powered application for effortless backups",
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test,
-        "coveralls.github": :test
-      ],
       deps: deps(),
       package: package(),
       docs: docs(),
@@ -37,13 +30,14 @@ defmodule Litestream.MixProject do
   defp deps do
     [
       # Required dependencies
-      {:erlexec, "~> 2.0"},
+      {:erlexec, "~> 2.2"},
       {:castore, "~> 1.0"},
       {:octo_fetch, "~> 0.4"},
+      {:nimble_options, "~> 1.1"},
 
       # Development related dependencies
-      {:ex_doc, "~> 0.34", only: :dev},
-      {:doctor, "~> 0.21", only: :dev},
+      {:ex_doc, "~> 0.40", only: :dev},
+      {:doctor, "~> 0.22", only: :dev},
       {:credo, "~> 1.7", only: :dev},
       {:excoveralls, "~> 0.18", only: :test, runtime: false}
     ]
@@ -69,6 +63,18 @@ defmodule Litestream.MixProject do
       logo: "guides/images/logo.svg",
       extras: [
         "README.md"
+      ]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test
       ]
     ]
   end

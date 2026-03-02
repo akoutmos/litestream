@@ -1,7 +1,7 @@
 defmodule Litestream do
   @moduledoc """
   This GenServer module allows you to run [Litestream](https://litestream.io/) via a port in the background
-  so that you can easily backup your SQLite database to an object store.
+  so that you can easily backup your SQLite database to an object store, a seperate local file, SFTP, etc.
   """
 
   use GenServer,
@@ -11,6 +11,7 @@ defmodule Litestream do
   require Logger
 
   alias Litestream.Downloader
+  alias Litestream.Replicator
 
   @call_timeout 10_000
 
@@ -24,19 +25,16 @@ defmodule Litestream do
   expects a Keyword list with the following options:
 
   * `:repo` - The Ecto Repo that manages the SQLite database. REQUIRED
-  * `:replica_url` - The URL to which the SQLite database should be backed up. REQUIRED
-  * `:access_key_id` - The access key ID to the provided `:replica_url`. REQUIRED
-  * `:secret_access_key` - The secret access key to the provided `:replica_url`. REQUIRED
+  * `:strategy` - The Litestream backup strategy you want to use. REQUIRED
   * `:name` - The name of the GenServer process. By default it is `Litestream`. OPTIONAL
   * `:bin_path` - If you already have access to the Litestream binary, provide the path via this
                   option so that you can skip the download step. OPTIONAL
+  * `:version` - The version of Litestream that you want to download. OPTIONAL
   """
   def start_link(opts) do
     state = %{
       repo: Keyword.fetch!(opts, :repo),
-      replica_url: Keyword.fetch!(opts, :replica_url),
-      access_key_id: Keyword.fetch!(opts, :access_key_id),
-      secret_access_key: Keyword.fetch!(opts, :secret_access_key),
+      strategy: Keyword.fetch!(opts, :strategy),
       bin_path: Keyword.get(opts, :bin_path, :download),
       version: Keyword.get(opts, :version, Downloader.default_version())
     }
@@ -117,21 +115,24 @@ defmodule Litestream do
 
   def handle_continue(:start_litestream, state) do
     {:ok, port_pid, os_pid} =
-      :exec.run_link(
-        "#{state.bin_path} replicate #{state.database} #{state.replica_url}",
-        [
-          :monitor,
-          {:env,
-           [
-             :clear,
-             {"LITESTREAM_ACCESS_KEY_ID", state.access_key_id},
-             {"LITESTREAM_SECRET_ACCESS_KEY", state.secret_access_key}
-           ]},
-          {:kill_timeout, 10},
-          :stdout,
-          :stderr
-        ]
-      )
+      [
+        state.bin_path,
+        "replicate",
+        state.database
+        | Replicator.cli_args(state.strategy)
+      ]
+      |> Enum.concat()
+      |> Enum.join(" ")
+      |> :exec.run_link([
+        :monitor,
+        {:env,
+         [
+           :clear | Replicator.env_vars(state.strategy)
+         ]},
+        {:kill_timeout, 10},
+        :stdout,
+        :stderr
+      ])
 
     updated_state =
       state
