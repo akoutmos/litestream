@@ -6,6 +6,10 @@ defmodule Litestream.Strategy.LocalFile do
   alias __MODULE__
   alias Litestream.Replicator
 
+  @type t :: %LocalFile{
+          backup_path: String.t()
+        }
+
   defstruct [:backup_path]
 
   defimpl Replicator do

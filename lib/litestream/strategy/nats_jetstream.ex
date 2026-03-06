@@ -7,6 +7,11 @@ defmodule Litestream.Strategy.NatsJetstream do
   alias __MODULE__
   alias Litestream.Replicator
 
+  @type t :: %NatsJetstream{
+          url: String.t(),
+          bucket: String.t()
+        }
+
   defstruct [:url, :bucket]
 
   defimpl Replicator do

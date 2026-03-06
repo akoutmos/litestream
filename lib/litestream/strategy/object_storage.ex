@@ -7,6 +7,12 @@ defmodule Litestream.Strategy.ObjectStorage do
   alias __MODULE__
   alias Litestream.Replicator
 
+  @type t :: %ObjectStorage{
+          access_key_id: String.t(),
+          secret_access_key: String.t(),
+          url: String.t()
+        }
+
   defstruct [:access_key_id, :secret_access_key, :url]
 
   defimpl Replicator do

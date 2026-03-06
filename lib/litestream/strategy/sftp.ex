@@ -7,6 +7,14 @@ defmodule Litestream.Strategy.SFTP do
   alias __MODULE__
   alias Litestream.Replicator
 
+  @type t :: %SFTP{
+          user: String.t(),
+          password: String.t(),
+          host: String.t(),
+          port: String.t(),
+          path: String.t()
+        }
+
   defstruct [:user, :password, :host, :port, :path]
 
   defimpl Replicator do

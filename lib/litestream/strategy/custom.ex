@@ -7,6 +7,10 @@ defmodule Litestream.Strategy.Custom do
   alias __MODULE__
   alias Litestream.Replicator
 
+  @type t :: %Custom{
+          config_path: String.t()
+        }
+
   defstruct [:config_path]
 
   defimpl Replicator do

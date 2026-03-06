@@ -46,7 +46,7 @@ defmodule Litestream.MixProject do
   defp package do
     [
       name: "litestream",
-      files: ~w(lib mix.exs README.md),
+      files: ~w(lib mix.exs README.md LICENSE),
       licenses: ["MIT"],
       maintainers: ["Alex Koutmos"],
       links: %{
