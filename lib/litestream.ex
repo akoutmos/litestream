@@ -106,7 +106,11 @@ defmodule Litestream do
     File.mkdir_p!(download_dir)
     File.mkdir_p!(bin_dir)
 
-    {:ok, [bin_path], []} = Downloader.download(bin_dir, override_version: version)
+    bin_path =
+      case Downloader.download(bin_dir, override_version: version) do
+        {:ok, [bin_path], []} -> bin_path
+        {:skip, bin_path} -> bin_path
+      end
 
     updated_state = Map.put(state, :bin_path, bin_path)
 
@@ -117,9 +121,8 @@ defmodule Litestream do
     {:ok, port_pid, os_pid} =
       [
         state.bin_path,
-        "replicate",
-        state.database
-        | Replicator.cli_args(state.strategy)
+        "replicate"
+        | Replicator.cli_args(state.strategy, state.database)
       ]
       |> Enum.concat()
       |> Enum.join(" ")

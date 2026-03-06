@@ -1,6 +1,6 @@
 defmodule Litestream.Strategy.LocalFile do
   @moduledoc """
-  Use this strategy for backing up your SQLite DB file to a local file
+  Use this strategy for backing up your SQLite DB file to a local file.
   """
 
   alias __MODULE__
@@ -13,8 +13,8 @@ defmodule Litestream.Strategy.LocalFile do
       []
     end
 
-    def cli_args(%LocalFile{backup_path: backup_path}) do
-      ["file://" <> backup_path]
+    def cli_args(%LocalFile{backup_path: backup_path}, database) do
+      [database, "file://" <> backup_path]
     end
   end
 end
