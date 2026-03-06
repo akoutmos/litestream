@@ -108,8 +108,13 @@ defmodule Litestream do
 
     bin_path =
       case Downloader.download(bin_dir, override_version: version) do
-        {:ok, [bin_path], []} -> bin_path
-        {:skip, bin_path} -> bin_path
+        {:ok, output_files, []} ->
+          Enum.find(output_files, fn file ->
+            String.ends_with?(file, "litestream")
+          end)
+
+        {:skip, bin_path} ->
+          bin_path
       end
 
     updated_state = Map.put(state, :bin_path, bin_path)
@@ -124,7 +129,6 @@ defmodule Litestream do
         "replicate"
         | Replicator.cli_args(state.strategy, state.database)
       ]
-      |> Enum.concat()
       |> Enum.join(" ")
       |> :exec.run_link([
         :monitor,

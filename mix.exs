@@ -32,7 +32,7 @@ defmodule Litestream.MixProject do
       # Required dependencies
       {:erlexec, "~> 2.2"},
       {:castore, "~> 1.0"},
-      {:octo_fetch, "~> 0.4"},
+      {:octo_fetch, github: "akoutmos/octo_fetch"},
       {:nimble_options, "~> 1.1"},
 
       # Development related dependencies
