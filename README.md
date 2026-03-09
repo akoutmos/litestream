@@ -110,3 +110,7 @@ automatically synced with your remote destination.
 
 - The logo for the project is an edited version of an SVG image from the [unDraw project](https://undraw.co/)
 - The Litestream library that this library wraps [Litestream](https://litestream.io)
+
+## License
+
+[MIT](LICENSE)
