@@ -1,7 +1,7 @@
 defmodule Litestream do
   @moduledoc """
   This GenServer module allows you to run [Litestream](https://litestream.io/) via a port in the background
-  so that you can easily backup your SQLite database to an object store.
+  so that you can easily backup your SQLite database to an object store, a seperate local file, SFTP, etc.
   """
 
   use GenServer,
@@ -11,6 +11,7 @@ defmodule Litestream do
   require Logger
 
   alias Litestream.Downloader
+  alias Litestream.Replicator
 
   @call_timeout 10_000
 
@@ -24,37 +25,19 @@ defmodule Litestream do
   expects a Keyword list with the following options:
 
   * `:repo` - The Ecto Repo that manages the SQLite database. REQUIRED
-  * `:replica_url` - The URL to which the SQLite database should be backed up. REQUIRED
-  * `:access_key_id` - The access key ID to the provided `:replica_url`. REQUIRED
-  * `:secret_access_key` - The secret access key to the provided `:replica_url`. REQUIRED
+  * `:strategy` - The Litestream backup strategy you want to use. REQUIRED
   * `:name` - The name of the GenServer process. By default it is `Litestream`. OPTIONAL
   * `:bin_path` - If you already have access to the Litestream binary, provide the path via this
                   option so that you can skip the download step. OPTIONAL
-  * `:endpoint` - The endpoint URL for S3-compatible storage (e.g. Cloudflare R2). When provided,
-                  a config file will be used instead of CLI arguments. OPTIONAL
-  * `:region` - The region for S3-compatible storage. Defaults to "auto" when endpoint is set.
-                Only used when `:endpoint` is provided. OPTIONAL
-  * `:bucket` - The bucket name. Required when `:endpoint` is provided, as the bucket cannot
-                be inferred from the URL in that case. OPTIONAL
-  * `:replica_path` - The path within the bucket. Required when `:endpoint` is provided. OPTIONAL
+  * `:version` - The version of Litestream that you want to download. OPTIONAL
   """
   def start_link(opts) do
     state = %{
       repo: Keyword.fetch!(opts, :repo),
-      replica_url: Keyword.get(opts, :replica_url),
-      access_key_id: Keyword.fetch!(opts, :access_key_id),
-      secret_access_key: Keyword.fetch!(opts, :secret_access_key),
+      strategy: Keyword.fetch!(opts, :strategy),
       bin_path: Keyword.get(opts, :bin_path, :download),
-      version: Keyword.get(opts, :version, Downloader.default_version()),
-      override_architecture: Keyword.get(opts, :override_architecture, :x86_64),
-      endpoint: Keyword.get(opts, :endpoint),
-      region: Keyword.get(opts, :region, "auto"),
-      bucket: Keyword.get(opts, :bucket),
-      replica_path: Keyword.get(opts, :replica_path, ""),
-      config_path: nil
+      version: Keyword.get(opts, :version, Downloader.default_version())
     }
-
-    validate_opts!(state)
 
     GenServer.start_link(__MODULE__, state, name: Keyword.get(opts, :name, __MODULE__))
   end
@@ -93,6 +76,8 @@ defmodule Litestream do
     otp_app = Keyword.fetch!(repo_config, :otp_app)
     database_file = Keyword.fetch!(repo_config, :database)
 
+    # Make sure that the process traps exits so that we can cleanly shutdown the
+    # Litestream replication process
     Process.flag(:trap_exit, true)
 
     updated_state =
@@ -113,7 +98,7 @@ defmodule Litestream do
   end
 
   @impl true
-  def handle_continue(:download_litestream, %{otp_app: otp_app, version: version, override_architecture: override_architecture} = state) do
+  def handle_continue(:download_litestream, %{otp_app: otp_app, version: version} = state) do
     otp_app_priv_dir = :code.priv_dir(otp_app)
     download_dir = Path.join(otp_app_priv_dir, "/litestream/download")
     bin_dir = Path.join(otp_app_priv_dir, "/litestream/bin")
@@ -122,14 +107,14 @@ defmodule Litestream do
     File.mkdir_p!(bin_dir)
 
     bin_path =
-      Downloader.download(
-        bin_dir,
-        override_version: version,
-        override_architecture: override_architecture
-      )
-      |> case do
-        {:ok, [bin_path | _], []} -> bin_path
-        :skip -> Path.join(bin_dir, "litestream")
+      case Downloader.download(bin_dir, override_version: version) do
+        {:ok, output_files, []} ->
+          Enum.find(output_files, fn file ->
+            String.ends_with?(file, "litestream")
+          end)
+
+        {:skip, bin_path} ->
+          bin_path
       end
 
     updated_state = Map.put(state, :bin_path, bin_path)
@@ -138,22 +123,26 @@ defmodule Litestream do
   end
 
   def handle_continue(:start_litestream, state) do
-    {cmd, env, updated_state} = build_command(state)
-
     {:ok, port_pid, os_pid} =
-      :exec.run_link(
-        cmd,
-        [
-          :monitor,
-          {:env, [:clear] ++ env},
-          {:kill_timeout, 10},
-          :stdout,
-          :stderr
-        ]
-      )
+      [
+        state.bin_path,
+        "replicate"
+        | Replicator.cli_args(state.strategy, state.database)
+      ]
+      |> Enum.join(" ")
+      |> :exec.run_link([
+        :monitor,
+        {:env,
+         [
+           :clear | Replicator.env_vars(state.strategy)
+         ]},
+        {:kill_timeout, 10},
+        :stdout,
+        :stderr
+      ])
 
     updated_state =
-      updated_state
+      state
       |> Map.put(:port_pid, port_pid)
       |> Map.put(:os_pid, os_pid)
 
@@ -219,12 +208,8 @@ defmodule Litestream do
   end
 
   @impl true
-  def terminate(reason, %{config_path: config_path} = _state) do
+  def terminate(reason, _state) do
     Logger.info("Litestream is terminating with reason #{inspect(reason)}")
-
-    if config_path && File.exists?(config_path) do
-      File.rm(config_path)
-    end
 
     :ok
   end
@@ -232,53 +217,6 @@ defmodule Litestream do
   # +------------------------------------------------------------------+
   # |                   Private Helper Functions                       |
   # +------------------------------------------------------------------+
-
-  defp build_command(%{endpoint: nil} = state) do
-    # Simple S3 case — use CLI shorthand, pass credentials via env
-    cmd = "#{state.bin_path} replicate #{state.database} #{state.replica_url}"
-
-    env = [
-      {"LITESTREAM_ACCESS_KEY_ID", state.access_key_id},
-      {"LITESTREAM_SECRET_ACCESS_KEY", state.secret_access_key}
-    ]
-
-    {cmd, env, state}
-  end
-
-  defp build_command(%{endpoint: endpoint} = state) when is_binary(endpoint) do
-    # S3-compatible case (e.g. Cloudflare R2) — requires a config file
-    config_path = Path.join(System.tmp_dir!(), "litestream-#{:erlang.unique_integer([:positive])}.yml")
-
-    config = """
-    dbs:
-      - path: #{state.database}
-        replicas:
-          - type: s3
-            bucket: #{state.bucket}
-            path: #{state.replica_path}
-            region: #{state.region}
-            endpoint: #{state.endpoint}
-            access-key-id: #{state.access_key_id}
-            secret-access-key: #{state.secret_access_key}
-    """
-
-    File.write!(config_path, config)
-
-    cmd = "#{state.bin_path} replicate -config #{config_path}"
-
-    {cmd, [], Map.put(state, :config_path, config_path)}
-  end
-
-  defp validate_opts!(%{endpoint: nil, replica_url: nil}) do
-    raise ArgumentError, "`:replica_url` is required when `:endpoint` is not set"
-  end
-
-  defp validate_opts!(%{endpoint: endpoint, bucket: nil}) when is_binary(endpoint) do
-    raise ArgumentError, "`:bucket` is required when `:endpoint` is set"
-  end
-
-  defp validate_opts!(_state), do: :ok
-
   defp clear_pids(state) do
     state
     |> Map.put(:port_pid, nil)

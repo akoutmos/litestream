@@ -17,20 +17,24 @@ defmodule Litestream.Downloader do
       ]
     }
 
-  require Logger
-
   @impl true
   def pre_download_hook(_file, output_dir) do
-    if File.exists?(Path.join(output_dir, "litestream")) do
-      :skip
+    output_binary = Path.join(output_dir, "litestream")
+
+    if File.exists?(output_binary) do
+      {:skip, output_binary}
     else
       :cont
     end
   end
 
   @impl true
-  def post_write_hook(litestream_executable) do
-    File.chmod!(litestream_executable, 0o755)
+  def post_write_hook(file) do
+    if String.ends_with?(file, "litestream") do
+      File.chmod!(file, 0o755)
+    else
+      File.rm!(file)
+    end
 
     :ok
   end
