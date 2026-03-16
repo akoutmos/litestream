@@ -22,5 +22,9 @@ defmodule Litestream.Strategy.NatsJetstream do
     def cli_args(%NatsJetstream{url: url, bucket: bucket}, database) do
       [database, Path.join(url, bucket)]
     end
+
+    def temp_file_contents(_struct, _database) do
+      nil
+    end
   end
 end

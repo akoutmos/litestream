@@ -21,5 +21,9 @@ defmodule Litestream.Strategy.Custom do
     def cli_args(%Custom{config_path: config_path}, _database) do
       ["-config", config_path]
     end
+
+    def temp_file_contents(_struct, _database) do
+      nil
+    end
   end
 end

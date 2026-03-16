@@ -37,5 +37,9 @@ defmodule Litestream.Strategy.SupabaseStorage do
 
       [database, URI.to_string(uri)]
     end
+
+    def temp_file_contents(_struct, _database) do
+      nil
+    end
   end
 end

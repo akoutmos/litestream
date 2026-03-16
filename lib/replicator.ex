@@ -18,4 +18,11 @@ defprotocol Litestream.Replicator do
   """
   @spec cli_args(struct :: t(), database :: String.t()) :: list(args :: String.t())
   def cli_args(struct, database)
+
+  @doc """
+  If the strategy requires a temporary file for it's configuration, this function
+  will provide the
+  """
+  @spec temp_file_contents(struct :: t(), database :: String.t()) :: temp_file_contents :: String.t()
+  def temp_file_contents(struct, database)
 end

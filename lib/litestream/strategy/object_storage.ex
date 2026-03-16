@@ -26,5 +26,9 @@ defmodule Litestream.Strategy.ObjectStorage do
     def cli_args(%ObjectStorage{url: url}, database) do
       [database, url]
     end
+
+    def temp_file_contents(_struct, _database) do
+      nil
+    end
   end
 end

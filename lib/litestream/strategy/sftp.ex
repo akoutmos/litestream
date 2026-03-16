@@ -25,5 +25,9 @@ defmodule Litestream.Strategy.SFTP do
     def cli_args(%SFTP{user: user, password: password, host: host, port: port, path: path}, database) do
       [database, Path.join("sftp://#{user}:#{password}@#{host}:#{port}", path)]
     end
+
+    def temp_file_contents(_struct, _database) do
+      nil
+    end
   end
 end

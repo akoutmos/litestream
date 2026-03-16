@@ -20,5 +20,9 @@ defmodule Litestream.Strategy.LocalFile do
     def cli_args(%LocalFile{backup_path: backup_path}, database) do
       [database, "file://" <> backup_path]
     end
+
+    def temp_file_contents(_struct, _database) do
+      nil
+    end
   end
 end
