@@ -32,7 +32,8 @@ defmodule Litestream do
   * `:version` - The version of Litestream that you want to download. OPTIONAL
   """
   def start_link(opts) do
-    repo_config = Keyword.fetch!(opts, :repo)
+    repo = Keyword.fetch!(opts, :repo)
+    repo_config = repo.config()
     database_file = Keyword.fetch!(repo_config, :database)
 
     strategy =
@@ -41,7 +42,7 @@ defmodule Litestream do
       |> maybe_create_temp_file(database_file)
 
     state = %{
-      repo: repo_config,
+      repo: repo,
       strategy: strategy,
       bin_path: Keyword.get(opts, :bin_path, :download),
       version: Keyword.get(opts, :version, Downloader.default_version())
@@ -224,7 +225,7 @@ defmodule Litestream do
       %_{temp_config_path: config_path} ->
         File.rm(config_path)
 
-      nil ->
+      _ ->
         :no_op
     end
 
