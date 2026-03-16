@@ -1,20 +1,21 @@
-defmodule Litestream.Strategy.Firebase do
+defmodule Litestream.Strategy.Minio do
   @moduledoc """
   Use this strategy for backing up your SQLite DB file to
-  Firebase's object storage.
+  MinIO's object storage.
   """
 
   alias __MODULE__
   alias Litestream.Replicator
 
-  @type t :: %Firebase{
+  @type t :: %Minio{
           bucket: String.t(),
           path: String.t(),
+          endpoint: String.t(),
           access_key_id: String.t(),
           secret_access_key: String.t()
         }
 
-  @required_keys [:bucket, :path, :access_key_id, :secret_access_key]
+  @required_keys [:bucket, :path, :endpoint, :access_key_id, :secret_access_key]
   @enforce_keys @required_keys
   defstruct [:temp_config_path | @required_keys]
 
@@ -23,14 +24,15 @@ defmodule Litestream.Strategy.Firebase do
       []
     end
 
-    def cli_args(%Firebase{temp_config_path: config_path}, _database) do
+    def cli_args(%Minio{temp_config_path: config_path}, _database) do
       ["-config", config_path]
     end
 
     def temp_file_contents(
-          %Firebase{
+          %Minio{
             bucket: bucket,
             path: path,
+            endpoint: endpoint,
             access_key_id: access_key_id,
             secret_access_key: secret_access_key
           },
@@ -43,7 +45,7 @@ defmodule Litestream.Strategy.Firebase do
             type: s3
             bucket: #{bucket}
             path: #{path}
-            endpoint: s3.filebase.com
+            endpoint: #{endpoint}
             region: us-east-1
             access-key-id: #{access_key_id}
             secret-access-key: #{secret_access_key}
