@@ -32,9 +32,17 @@ defmodule Litestream do
   * `:version` - The version of Litestream that you want to download. OPTIONAL
   """
   def start_link(opts) do
+    repo_config = Keyword.fetch!(opts, :repo)
+    database_file = Keyword.fetch!(repo_config, :database)
+
+    strategy =
+      opts
+      |> Keyword.fetch!(:strategy)
+      |> maybe_create_temp_file(database_file)
+
     state = %{
-      repo: Keyword.fetch!(opts, :repo),
-      strategy: Keyword.fetch!(opts, :strategy),
+      repo: repo_config,
+      strategy: strategy,
       bin_path: Keyword.get(opts, :bin_path, :download),
       version: Keyword.get(opts, :version, Downloader.default_version())
     }
@@ -221,5 +229,17 @@ defmodule Litestream do
     state
     |> Map.put(:port_pid, nil)
     |> Map.put(:os_pid, nil)
+  end
+
+  defp maybe_create_temp_file(strategy, database) do
+    case Replicator.temp_file_contents(strategy, database) do
+      nil ->
+        strategy
+
+      file_contents ->
+        temp_path = Path.join(System.tmp_dir!(), "litestream-#{:erlang.unique_integer([:positive])}.yml")
+        File.write!(temp_path, file_contents)
+        Map.put(strategy, :temp_config_path, temp_path)
+    end
   end
 end
