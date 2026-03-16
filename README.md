@@ -98,9 +98,9 @@ In your `runtime.exs` (or `dev.exs` if you are just developing locally):
 ```elixir
 config :my_app, Litestream,
   repo: MyApp.Repo,
-  replica_url: System.fetch_env!("REPLICA_URL"),
-  access_key_id: System.fetch_env!("ACCESS_KEY_ID"),
-  secret_access_key: System.fetch_env!("SECRET_ACCESS_KEY")
+  strategy: %Litestream.Strategy.LocalFile{
+    backup_path: "/path/to/backup/folder"
+  }
 ```
 
 With those in place, you should be all set to go! As soon as your application starts, your database will be
