@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - TBD
+
+### Changed
+
+- The library saw a complete overhaul thanks to the suggestions made by @Cinderella-Man to
+  now actually providing individual strategies that mirror Litestream's backup destinations.
+  All of the backup strategies can be found under the `Litestream.Strategy.*` namespace.
+- This library now leans on the `0.5.*` releases from Litestream and no longer support `0.4.*`.
+
 ## [0.4.0] - 2023-06-04
 
 ### Changed

@@ -4,7 +4,7 @@ defmodule Litestream.MixProject do
   def project do
     [
       app: :litestream,
-      version: "0.4.0",
+      version: "0.5.0",
       elixir: "~> 1.13",
       name: "Litestream",
       source_url: "https://github.com/akoutmos/litestream",
@@ -61,6 +61,26 @@ defmodule Litestream.MixProject do
       main: "readme",
       source_ref: "master",
       logo: "guides/images/logo.svg",
+      groups_for_modules: [
+        "Backup Strategies": [
+          Litestream.Strategy.AzureBlobStorage,
+          Litestream.Strategy.BackblazeB2,
+          Litestream.Strategy.CloudflareR2,
+          Litestream.Strategy.Custom,
+          Litestream.Strategy.DigitalOceanSpaces,
+          Litestream.Strategy.Firebase,
+          Litestream.Strategy.GoogleCloudStorage,
+          Litestream.Strategy.LinodeObjectStorage,
+          Litestream.Strategy.LocalFile,
+          Litestream.Strategy.Minio,
+          Litestream.Strategy.NatsJetstream,
+          Litestream.Strategy.ObjectStorage,
+          Litestream.Strategy.ScalewayObjectStorage,
+          Litestream.Strategy.SFTP,
+          Litestream.Strategy.SupabaseStorage,
+          Litestream.Strategy.Tigris
+        ]
+      ],
       extras: [
         "README.md"
       ]
