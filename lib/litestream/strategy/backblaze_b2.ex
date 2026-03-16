@@ -1,21 +1,21 @@
-defmodule Litestream.Strategy.CloudflareR2 do
+defmodule Litestream.Strategy.BackblazeB2 do
   @moduledoc """
   Use this strategy for backing up your SQLite DB file to
-  Cloudflare's R2 object storage.
+  Backblazes's B2 object storage.
   """
 
   alias __MODULE__
   alias Litestream.Replicator
 
-  @type t :: %CloudflareR2{
+  @type t :: %BackblazeB2{
           bucket: String.t(),
           path: String.t(),
-          account_id: String.t(),
+          endpoint: String.t(),
           access_key_id: String.t(),
           secret_access_key: String.t()
         }
 
-  @required_keys [:bucket, :path, :account_id, :access_key_id, :secret_access_key]
+  @required_keys [:bucket, :path, :endpoint, :access_key_id, :secret_access_key]
   @enforce_keys @required_keys
   defstruct [:temp_config_path | @required_keys]
 
@@ -24,31 +24,32 @@ defmodule Litestream.Strategy.CloudflareR2 do
       []
     end
 
-    def cli_args(%CloudflareR2{temp_config_path: config_path}, _database) do
+    def cli_args(%BackblazeB2{temp_config_path: config_path}, _database) do
       ["-config", config_path]
     end
 
     def temp_file_contents(
-          %CloudflareR2{
+          %BackblazeB2{
             bucket: bucket,
             path: path,
-            account_id: account_id,
+            endpoint: endpoint,
             access_key_id: access_key_id,
             secret_access_key: secret_access_key
           },
           database
         ) do
       """
+      access-key-id: #{access_key_id}
+      secret-access-key: #{secret_access_key}
+
       dbs:
         - path: #{database}
           replica:
             type: s3
             bucket: #{bucket}
             path: #{path}
-            endpoint: #{account_id}.r2.cloudflarestorage.com
-            region: auto
-            access-key-id: #{access_key_id}
-            secret-access-key: #{secret_access_key}
+            endpoint: #{endpoint}
+            force-path-style: true
       """
     end
   end
