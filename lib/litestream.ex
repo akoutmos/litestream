@@ -216,8 +216,17 @@ defmodule Litestream do
   end
 
   @impl true
-  def terminate(reason, _state) do
+  def terminate(reason, state) do
     Logger.info("Litestream is terminating with reason #{inspect(reason)}")
+
+    # Clean up any temp files created by the strategies
+    case state.strategy do
+      %_{temp_config_path: config_path} ->
+        File.rm(config_path)
+
+      nil ->
+        :no_op
+    end
 
     :ok
   end
