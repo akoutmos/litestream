@@ -93,7 +93,7 @@ defp litestream_config do
 end
 ```
 
-In your `runtime.exs` (or `dev.exs` if you are just developing locally):
+In your `runtime.exs`:
 
 ```elixir
 config :my_app, Litestream,
