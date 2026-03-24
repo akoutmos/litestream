@@ -4,51 +4,52 @@ defmodule Litestream.Downloader do
   """
 
   use OctoFetch,
-    latest_version: "0.3.13",
+    latest_version: "0.5.9",
     github_repo: "benbjohnson/litestream",
     download_versions: %{
-      "0.3.13" => [
-        {:darwin, :amd64, "6f68536bd24a0b6c4fdefb2f91ba27332e2146fb9f1be7985adfee8cdfce9784"},
-        {:darwin, :arm64, "6d1689487432613f5c10aee75ee77c95250dcce4da49695bf0a448c794eb7daa"},
-        {:linux, :amd64, "eb75a3de5cab03875cdae9f5f539e6aedadd66607003d9b1e7a9077948818ba0"},
-        {:linux, :arm64, "9585f5a508516bd66af2b2376bab4de256a5ef8e2b73ec760559e679628f2d59"}
+      "0.5.9" => [
+        {:darwin, :arm64, "1ccff96084d3e0faf4f8fabd22931fd774718f43b920480c48cbf366a558146d"},
+        {:darwin, :amd64, "61750da940ba00dce5a582fc549848754270acc6dca7643a8afea5cf32d45e9d"},
+        {:linux, :arm64, "330e290f98ecf00ac3b8b2e2f038d81ada2712da86a9466d3187f02ded269821"},
+        {:linux, :amd64, "e8612ef5424802723e8cfa2d07a182df60f9af71839b5ff5ef1e80dff38efbdd"},
+        {:windows, :arm64, "7bd96ec53d3b4fc3a4e5f312f751186a18db736c8c4600f5ebd2be70783703f7"},
+        {:windows, :amd64, "f83b9ca924717b03fd44fed3463591f603e400e9b295ec0f463c2bb867f23bdb"}
       ],
-      "0.3.9" => [
-        {:darwin, :amd64, "74599a34dc440c19544f533be2ef14cd4378ec1969b9b4fcfd24158946541869"},
-        {:linux, :amd64, "806e1cca4a2a105a36f219a4c212a220569d50a8f13f45f38ebe49e6699ab99f"},
-        {:linux, :arm64, "61acea9d960633f6df514972688c47fa26979fbdb5b4e81ebc42f4904394c5c5"}
-      ],
-      "0.3.8" => [
-        {:darwin, :amd64, "d359a4edd1cb98f59a1a7c787bbd0ed30c6cc3126b02deb05a0ca501ff94a46a"},
-        {:linux, :amd64, "530723d95a51ee180e29b8eba9fee8ddafc80a01cab7965290fb6d6fc31381b3"},
-        {:linux, :arm64, "1d6fb542c65b7b8bf91c8859d99f2f48b0b3251cc201341281f8f2c686dd81e2"}
-      ],
-      "0.3.7" => [
-        {:darwin, :amd64, "fdfd811df081949fdac2f09af8ad624c37c02b98c0e777f725f69e67be270745"},
-        {:linux, :amd64, "e9daf0b73d7b5d75eac22bb9f0a93945e3efce0f1ff5f3a6b57f4341da4609cf"},
-        {:linux, :arm64, "1c0c1c6a2346fb67d69e594b6342e1d13f078d2b02a2c8bae4b84ea188b12579"}
+      "0.5.8" => [
+        {:darwin, :arm64, "9f70cf6c79b09bcc9943f3acde0e207d008dc38b218a2992f46d4d0d0f6c830b"},
+        {:darwin, :amd64, "e4987bddd8b7ce8e176a22109d3e226a87c0df65bc1ffd1ed03f6ff0cdf78ffa"},
+        {:linux, :arm64, "7417919b8df803b02ca511adbf401771830526c9b22dcde10b9ab04714a346ee"},
+        {:linux, :amd64, "0a7234a3f1c8d0f1af95c3489c0012aba4b3d966bb12312bf61b65069873d853"},
+        {:windows, :arm64, "07a1dc7894eb2955f4076a433345a9e2919dc9c154e4fc60ed88eaf0782c8c6f"},
+        {:windows, :amd64, "6efb6b62794d216d7ace5f65383bb1bcdfad466b6e7278e806ea94731d625e36"}
       ]
     }
 
-  require Logger
-
   @impl true
   def pre_download_hook(_file, output_dir) do
-    if File.exists?(Path.join(output_dir, "litestream")) do
-      :skip
+    output_binary = Path.join(output_dir, "litestream")
+
+    if File.exists?(output_binary) do
+      {:skip, output_binary}
     else
       :cont
     end
   end
 
   @impl true
-  def post_write_hook(litestream_executable) do
-    File.chmod!(litestream_executable, 0o755)
+  def post_write_hook(file) do
+    if String.ends_with?(file, "litestream") do
+      File.chmod!(file, 0o755)
+    else
+      File.rm!(file)
+    end
 
     :ok
   end
 
   @impl true
-  def download_name(version, :darwin, arch), do: "litestream-v#{version}-darwin-#{arch}.zip"
-  def download_name(version, :linux, arch), do: "litestream-v#{version}-linux-#{arch}.tar.gz"
+  def download_name(version, :windows, :amd64), do: "litestream-#{version}-windows-x86_64.zip"
+  def download_name(version, :windows, :arm64), do: "litestream-#{version}-windows-arm64.zip"
+  def download_name(version, os, :amd64), do: "litestream-#{version}-#{os}-x86_64.tar.gz"
+  def download_name(version, os, arch), do: "litestream-#{version}-#{os}-#{arch}.tar.gz"
 end

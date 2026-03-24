@@ -4,7 +4,7 @@ defmodule Litestream.MixProject do
   def project do
     [
       app: :litestream,
-      version: "0.4.0",
+      version: "0.5.0",
       elixir: "~> 1.13",
       name: "Litestream",
       source_url: "https://github.com/akoutmos/litestream",
@@ -12,13 +12,6 @@ defmodule Litestream.MixProject do
       description: "Add Litestream to your SQLite powered application for effortless backups",
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test,
-        "coveralls.github": :test
-      ],
       deps: deps(),
       package: package(),
       docs: docs(),
@@ -37,13 +30,14 @@ defmodule Litestream.MixProject do
   defp deps do
     [
       # Required dependencies
-      {:erlexec, "~> 2.0"},
+      {:erlexec, "~> 2.2"},
       {:castore, "~> 1.0"},
-      {:octo_fetch, "~> 0.4"},
+      {:octo_fetch, github: "akoutmos/octo_fetch"},
+      {:nimble_options, "~> 1.1"},
 
       # Development related dependencies
-      {:ex_doc, "~> 0.34", only: :dev},
-      {:doctor, "~> 0.21", only: :dev},
+      {:ex_doc, "~> 0.40", only: :dev},
+      {:doctor, "~> 0.22", only: :dev},
       {:credo, "~> 1.7", only: :dev},
       {:excoveralls, "~> 0.18", only: :test, runtime: false}
     ]
@@ -52,7 +46,7 @@ defmodule Litestream.MixProject do
   defp package do
     [
       name: "litestream",
-      files: ~w(lib mix.exs README.md),
+      files: ~w(lib mix.exs README.md LICENSE),
       licenses: ["MIT"],
       maintainers: ["Alex Koutmos"],
       links: %{
@@ -67,8 +61,40 @@ defmodule Litestream.MixProject do
       main: "readme",
       source_ref: "master",
       logo: "guides/images/logo.svg",
+      groups_for_modules: [
+        "Backup Strategies": [
+          Litestream.Strategy.AzureBlobStorage,
+          Litestream.Strategy.BackblazeB2,
+          Litestream.Strategy.CloudflareR2,
+          Litestream.Strategy.Custom,
+          Litestream.Strategy.DigitalOceanSpaces,
+          Litestream.Strategy.Firebase,
+          Litestream.Strategy.GoogleCloudStorage,
+          Litestream.Strategy.LinodeObjectStorage,
+          Litestream.Strategy.LocalFile,
+          Litestream.Strategy.Minio,
+          Litestream.Strategy.NatsJetstream,
+          Litestream.Strategy.ObjectStorage,
+          Litestream.Strategy.ScalewayObjectStorage,
+          Litestream.Strategy.SFTP,
+          Litestream.Strategy.SupabaseStorage,
+          Litestream.Strategy.Tigris
+        ]
+      ],
       extras: [
         "README.md"
+      ]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test
       ]
     ]
   end

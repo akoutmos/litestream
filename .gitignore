@@ -24,3 +24,4 @@ erl_crash.dump
 
 # Somewhere to store the litestream binaries during development
 /downloads/
+/priv/litestream

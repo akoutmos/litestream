@@ -1,7 +1,7 @@
 defmodule Litestream do
   @moduledoc """
   This GenServer module allows you to run [Litestream](https://litestream.io/) via a port in the background
-  so that you can easily backup your SQLite database to an object store.
+  so that you can easily backup your SQLite database to an object store, a seperate local file, SFTP, etc.
   """
 
   use GenServer,
@@ -11,6 +11,7 @@ defmodule Litestream do
   require Logger
 
   alias Litestream.Downloader
+  alias Litestream.Replicator
 
   @call_timeout 10_000
 
@@ -24,19 +25,25 @@ defmodule Litestream do
   expects a Keyword list with the following options:
 
   * `:repo` - The Ecto Repo that manages the SQLite database. REQUIRED
-  * `:replica_url` - The URL to which the SQLite database should be backed up. REQUIRED
-  * `:access_key_id` - The access key ID to the provided `:replica_url`. REQUIRED
-  * `:secret_access_key` - The secret access key to the provided `:replica_url`. REQUIRED
+  * `:strategy` - The Litestream backup strategy you want to use. REQUIRED
   * `:name` - The name of the GenServer process. By default it is `Litestream`. OPTIONAL
   * `:bin_path` - If you already have access to the Litestream binary, provide the path via this
                   option so that you can skip the download step. OPTIONAL
+  * `:version` - The version of Litestream that you want to download. OPTIONAL
   """
   def start_link(opts) do
+    repo = Keyword.fetch!(opts, :repo)
+    repo_config = repo.config()
+    database_file = Keyword.fetch!(repo_config, :database)
+
+    strategy =
+      opts
+      |> Keyword.fetch!(:strategy)
+      |> maybe_create_temp_file(database_file)
+
     state = %{
-      repo: Keyword.fetch!(opts, :repo),
-      replica_url: Keyword.fetch!(opts, :replica_url),
-      access_key_id: Keyword.fetch!(opts, :access_key_id),
-      secret_access_key: Keyword.fetch!(opts, :secret_access_key),
+      repo: repo,
+      strategy: strategy,
       bin_path: Keyword.get(opts, :bin_path, :download),
       version: Keyword.get(opts, :version, Downloader.default_version())
     }
@@ -108,7 +115,16 @@ defmodule Litestream do
     File.mkdir_p!(download_dir)
     File.mkdir_p!(bin_dir)
 
-    {:ok, [bin_path], []} = Downloader.download(bin_dir, override_version: version)
+    bin_path =
+      case Downloader.download(bin_dir, override_version: version) do
+        {:ok, output_files, []} ->
+          Enum.find(output_files, fn file ->
+            String.ends_with?(file, "litestream")
+          end)
+
+        {:skip, bin_path} ->
+          bin_path
+      end
 
     updated_state = Map.put(state, :bin_path, bin_path)
 
@@ -117,21 +133,22 @@ defmodule Litestream do
 
   def handle_continue(:start_litestream, state) do
     {:ok, port_pid, os_pid} =
-      :exec.run_link(
-        "#{state.bin_path} replicate #{state.database} #{state.replica_url}",
-        [
-          :monitor,
-          {:env,
-           [
-             :clear,
-             {"LITESTREAM_ACCESS_KEY_ID", state.access_key_id},
-             {"LITESTREAM_SECRET_ACCESS_KEY", state.secret_access_key}
-           ]},
-          {:kill_timeout, 10},
-          :stdout,
-          :stderr
-        ]
-      )
+      [
+        state.bin_path,
+        "replicate"
+        | Replicator.cli_args(state.strategy, state.database)
+      ]
+      |> Enum.join(" ")
+      |> :exec.run_link([
+        :monitor,
+        {:env,
+         [
+           :clear | Replicator.env_vars(state.strategy)
+         ]},
+        {:kill_timeout, 10},
+        :stdout,
+        :stderr
+      ])
 
     updated_state =
       state
@@ -200,8 +217,17 @@ defmodule Litestream do
   end
 
   @impl true
-  def terminate(reason, _state) do
+  def terminate(reason, state) do
     Logger.info("Litestream is terminating with reason #{inspect(reason)}")
+
+    # Clean up any temp files created by the strategies
+    case state.strategy do
+      %_{temp_config_path: config_path} ->
+        File.rm(config_path)
+
+      _ ->
+        :no_op
+    end
 
     :ok
   end
@@ -213,5 +239,17 @@ defmodule Litestream do
     state
     |> Map.put(:port_pid, nil)
     |> Map.put(:os_pid, nil)
+  end
+
+  defp maybe_create_temp_file(strategy, database) do
+    case Replicator.temp_file_contents(strategy, database) do
+      nil ->
+        strategy
+
+      file_contents ->
+        temp_path = Path.join(System.tmp_dir!(), "litestream-#{:erlang.unique_integer([:positive])}.yml")
+        File.write!(temp_path, file_contents)
+        Map.put(strategy, :temp_config_path, temp_path)
+    end
   end
 end

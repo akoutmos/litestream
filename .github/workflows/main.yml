@@ -6,9 +6,9 @@ env:
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   static_analysis:
@@ -17,14 +17,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-elixir@v1
         with:
-          elixir-version: '1.13.3'
-          otp-version: '24.2'
+          elixir-version: "1.18"
+          otp-version: "27"
       - name: Restore dependencies cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: deps
           key: ${{ runner.os }}-mix-v2-${{ hashFiles('**/mix.lock') }}
@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: mix deps.get
       - name: Restore PLT cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: priv/plts
           key: ${{ runner.os }}-mix-v2-${{ hashFiles('**/mix.lock') }}
@@ -53,20 +53,20 @@ jobs:
     strategy:
       matrix:
         elixir:
-          - '1.13.3'
+          - "1.18"
         otp:
-          - '24.2'
+          - "27"
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-elixir@v1
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
       - name: Restore dependencies cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: deps
           key: ${{ runner.os }}-mix-v2-${{ hashFiles('**/mix.lock') }}
