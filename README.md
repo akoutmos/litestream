@@ -31,7 +31,7 @@
 
 ## Installation
 
-[Available in Hex](https://hex.pm/packages/Litestream), the package can be installed by adding `litestream` to your list of
+[Available in Hex](https://hex.pm/packages/litestream), the package can be installed by adding `litestream` to your list of
 dependencies in `mix.exs`:
 
 ```elixir
